@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import Box from '../src/components/Box';
 import MainGrid from '../src/components/mainGrid';
@@ -10,7 +10,7 @@ import { ProfileRelationsBoxWapper } from '../src/ProfileRelations';
 
 function ProfileSider(propriedades) {
   return (
-    <Box >
+    <Box as='aside'>
 
       <img src={`https://github.com/${propriedades.githubUser}.png`} style={{ borderRadius: '8px' }} />
       <hr />
@@ -27,16 +27,42 @@ function ProfileSider(propriedades) {
   )
 }
 
+function ProfileRelationBox(propriedades) {
+  return (
+    <ProfileRelationsBoxWapper >
+      <h2 className='smalTitle'>
+
+        {propriedades.title} {propriedades.items.length}
+      </h2>
+      <ul>
+
+        {/* {
+          seguidores.map((itemAtual => {
+            return (
+              <li key={itemAtual}>
+
+                <a href={`https://github.com/${itemAtual.login}.png`} >
+
+                  <img src={itemAtual.image} />
+                  <span>{itemAtual.title}</span>
+                </a>
+              </li>
+
+            );
+          })
+
+          )
+        } */}
+      </ul>
+
+    </ProfileRelationsBoxWapper>
+
+  );
+}
+
 export default function Home() {
 
-  const [comunidades, setComunidades] = useState([{
-    id: '1',
-    title: 'Eu odeio acordar cedo',
-    image: 'https://alurakut.vercel.app/capa-comunidade-01.jpg'
-  }]);
-
-  console.log(comunidades)
-
+  const [comunidades, setComunidades] = useState([]);
 
   const githubUser = 'andermsilva'
   const pessoasFavoristas = ['recieire',
@@ -44,6 +70,48 @@ export default function Home() {
     'leitecsleite',
     'marcobrunodev', 'felipefialho'
   ]
+  // pegar 
+  //criar uma box que vai ter um map, baseado em um array que pegamos do github
+  const [seguidores, setSeguidores] = useState([]);
+  useEffect(function () {
+
+    const seguidores = fetch('https://api.github.com/users/andermsilva/followers')
+      .then(function (respostaServidor) {
+        return respostaServidor.json()
+      }).then(function (respostaCompleta) {
+        setSeguidores(respostaCompleta);
+      });
+    //API GraphQL
+    console.log(process.env.TOKEN_AUTHORIZATION)
+    fetch('https://graphql.datocms.com/', {
+      method: 'POST',
+      headers: {
+        'Authorization': '49b643a3f9ca081a3f2c49378a5ab4',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        "query": `
+        query{
+          allCommunities{
+            title
+            id
+            imageUrl
+            creatorSlug
+          }
+        }
+        `
+      })
+
+    }).then((response) => response.json())
+      .then((respostaCompleta) => {
+        const comunidadesVindasDoDato = respostaCompleta.data.allCommunities;
+        console.log(respostaCompleta)
+        setComunidades(comunidadesVindasDoDato)
+      })
+
+  }, []);
+
   return (
     <>
       <AlurakutMenu githubUser={githubUser} />
@@ -74,15 +142,29 @@ export default function Home() {
                   const dadosForm = new FormData(e.target);
 
                   const comunidade = {
-                    id: new Date().toISOString(),
+
                     title: dadosForm.get('title'),
-                    image: dadosForm.get('image'),
+                    imageUrl: dadosForm.get('image'),
+                    creatorSlug: githubUser,
 
 
                   }
-                  console.log(comunidade, comunidades)
-                  const comunidadesAtualizadas = [...comunidades, comunidade]
-                  setComunidades(comunidadesAtualizadas)
+
+                  fetch('/api/comunidades', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(comunidade)
+
+                  }).then(async (response) => {
+                    const dados = await response.json();
+                    console.log(dados.registroCriado)
+                    const comundade = dados.registroCriado
+                    const comunidadesAtualizadas = [...comunidades, comunidade];
+                    setComunidades(comunidadesAtualizadas);
+                  })
+
 
 
                 }
@@ -108,22 +190,22 @@ export default function Home() {
           </Box>
         </div>
         <div className='profileRelationArea' style={{ gridArea: 'profileRelationArea' }}>
-
-          <ProfileRelationsBoxWapper>
+          <ProfileRelationBox title='Seguidores' items={seguidores} />
+          <ProfileRelationsBoxWapper >
             <h2 className='smalTitle'>
 
-              Comunidades
+              Comunidades ({comunidades.length})
             </h2>
             <ul>
 
               {
-                comunidades.map((itemAtual => {
+                comunidades.slice(0, 6).map((itemAtual => {
                   return (
                     <li key={itemAtual.id}>
 
-                      <a href={`users/${itemAtual.title}`} >
+                      <a href={`community/${itemAtual.title}`} >
 
-                        <img src={itemAtual.image} />
+                        <img src={itemAtual.imageUrl} />
                         <span>{itemAtual.title}</span>
                       </a>
                     </li>
@@ -131,8 +213,7 @@ export default function Home() {
                   );
                 })
 
-                )
-              }
+                )}
             </ul>
 
           </ProfileRelationsBoxWapper>
@@ -163,9 +244,8 @@ export default function Home() {
             </ul>
           </ProfileRelationsBoxWapper>
 
-          <Box >
-            Comunidades
-          </Box>
+
+
         </div>
       </MainGrid>
 
