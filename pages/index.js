@@ -265,7 +265,8 @@ export async function getServerSideProps(context) {
   const isLocal = process.env.ALURA_KUT === 'local';
 
 
-  const BASE_URL_AUTH = isLocal ? process.env.URL_AUTH : process.env.URL_AUTH_REMOTE
+  //const BASE_URL_AUTH = isLocal ? process.env.URL_AUTH :
+  const BASE_URL_AUTH = process.env.URL_AUTH_REMOTE
 
 
 
