@@ -4,6 +4,7 @@ import nookies from 'nookies';
 import jwt from 'jsonwebtoken';
 
 
+
 import Box from '../src/components/Box';
 import MainGrid from '../src/components/mainGrid';
 
@@ -262,13 +263,13 @@ export default function Home(props) {
 export async function getServerSideProps(context) {
   //const { config } = require('process');
 
-  const isLocal = process.env.ALURA_KUT === 'local';
+  //const isLocal = process.env.ALURA_KUT === 'local';
 
 
   //const BASE_URL_AUTH = isLocal ? process.env.URL_AUTH :
-  const BASE_URL_AUTH = process.env.URL_AUTH_REMOTE
+  //const BASE_URL_AUTH = process.env.URL_AUTH_REMOTE
 
-
+  const BASE_URL_AUTH = 'https://alurakut.vercel.app'
 
   const cookies = nookies.get(context)
   const token = cookies.USER_TOKEN
@@ -282,7 +283,7 @@ export async function getServerSideProps(context) {
     }
   }).then((resposta) => resposta.json())
 
-  console.log(BASE_URL_AUTH)
+
   if (!isAuthenticated) {
     return {
       redirect: {
@@ -291,7 +292,7 @@ export async function getServerSideProps(context) {
       }
     }
   }
-  //console.log(githubUser, token)
+  console.log('siAuth ', isAuthenticated)
   return {
     props: {
 

@@ -14,7 +14,10 @@ export default async function githubAuth(req, res) {
     const response = await fetch(
         `https://api.github.com/users/${tokenDecoded.githubUser}`
     );
+
+
     const data = await response.json();
+
 
     if (data.message === "Not Found" || !data) {
         res.send({

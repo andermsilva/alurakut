@@ -32,7 +32,7 @@ export default function LoginScreen() {
                         }).then(async (respostaServ) => {
                             const dadosDaResposta = await respostaServ.json()
                             const token = dadosDaResposta.token;
-                            console.log(token)
+                            // console.log('token--', token)
                             nookies.set(null, 'USER_TOKEN', token, {
                                 path: '/',
                                 maxAge: 86400 * 7
