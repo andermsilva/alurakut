@@ -1,4 +1,8 @@
+//require('dotenv').config({ path: '../../.env.local' })
 import React, { useEffect, useState } from 'react';
+import nookies from 'nookies';
+import jwt from 'jsonwebtoken';
+
 
 import Box from '../src/components/Box';
 import MainGrid from '../src/components/mainGrid';
@@ -30,7 +34,7 @@ function ProfileSider(propriedades) {
 function ProfileRelationBox(propriedades) {
   return (
     <ProfileRelationsBoxWapper >
-      <h2 className='smalTitle'>
+      <h2 className='smallTitle'>
 
         {propriedades.title} {propriedades.items.length}
       </h2>
@@ -60,29 +64,30 @@ function ProfileRelationBox(propriedades) {
   );
 }
 
-export default function Home() {
+export default function Home(props) {
 
   const [comunidades, setComunidades] = useState([]);
 
-  const githubUser = 'andermsilva'
+  const usuarioAleatorio = props.githubUser
   const pessoasFavoristas = ['recieire',
     'Ganiell',
     'leitecsleite',
     'marcobrunodev', 'felipefialho'
   ]
+  //console.log(usuarioAleatorio)
   // pegar 
   //criar uma box que vai ter um map, baseado em um array que pegamos do github
   const [seguidores, setSeguidores] = useState([]);
   useEffect(function () {
 
-    const seguidores = fetch('https://api.github.com/users/andermsilva/followers')
+    const seguidores = fetch(`https://api.github.com/users/${usuarioAleatorio}/followers`)
       .then(function (respostaServidor) {
         return respostaServidor.json()
       }).then(function (respostaCompleta) {
         setSeguidores(respostaCompleta);
       });
     //API GraphQL
-    console.log(process.env.TOKEN_AUTHORIZATION)
+
     fetch('https://graphql.datocms.com/', {
       method: 'POST',
       headers: {
@@ -114,10 +119,10 @@ export default function Home() {
 
   return (
     <>
-      <AlurakutMenu githubUser={githubUser} />
+      <AlurakutMenu githubUser={usuarioAleatorio} />
       <MainGrid>
         <div className='profileArea' style={{ gridArea: 'profileArea' }}>
-          <ProfileSider githubUser={githubUser} />
+          <ProfileSider githubUser={usuarioAleatorio} />
         </div>
 
         <div className='welcomeArea' style={{ gridArea: 'welcomeArea' }}>
@@ -145,7 +150,7 @@ export default function Home() {
 
                     title: dadosForm.get('title'),
                     imageUrl: dadosForm.get('image'),
-                    creatorSlug: githubUser,
+                    creatorSlug: usuarioAleatorio,
 
 
                   }
@@ -192,7 +197,7 @@ export default function Home() {
         <div className='profileRelationArea' style={{ gridArea: 'profileRelationArea' }}>
           <ProfileRelationBox title='Seguidores' items={seguidores} />
           <ProfileRelationsBoxWapper >
-            <h2 className='smalTitle'>
+            <h2 className='smallTitle'>
 
               Comunidades ({comunidades.length})
             </h2>
@@ -218,14 +223,14 @@ export default function Home() {
 
           </ProfileRelationsBoxWapper>
           <ProfileRelationsBoxWapper>
-            <h2 className='smalTitle'>
+            <h2 className='smallTitle'>
 
               Pessoas da comunidade ({pessoasFavoristas.length})
             </h2>
             <ul>
 
               {
-                pessoasFavoristas.map((itemAtual => {
+                pessoasFavoristas.slice(0, 6).map((itemAtual => {
                   return (
                     <li key={itemAtual}>
 
@@ -253,3 +258,43 @@ export default function Home() {
   );
 }
 
+
+export async function getServerSideProps(context) {
+  //const { config } = require('process');
+
+  const isLocal = process.env.ALURA_KUT === 'local';
+
+
+  const BASE_URL_AUTH = isLocal ? process.env.URL_AUTH : process.env.URL_AUTH_REMOTE
+
+
+
+  const cookies = nookies.get(context)
+  const token = cookies.USER_TOKEN
+
+  const { githubUser } = jwt.decode(token);
+
+  const { isAuthenticated } = await fetch(`${BASE_URL_AUTH}/api/auth`, {
+
+    headers: {
+      Authorization: token
+    }
+  }).then((resposta) => resposta.json())
+
+  console.log(BASE_URL_AUTH)
+  if (!isAuthenticated) {
+    return {
+      redirect: {
+        destination: '/login?msg=err',
+        permanent: false,
+      }
+    }
+  }
+  //console.log(githubUser, token)
+  return {
+    props: {
+
+      githubUser
+    }, // will be passed to the page component as props
+  }
+}
