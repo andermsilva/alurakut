@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import nookies from 'nookies';
 
+
 export default function LoginScreen() {
     const [githubUser, setGithubUser] = useState('andermsilva');
     const router = useRouter();
+
+    const { query } = useRouter()
+    console.log(query.msg)
 
     return (
         <main style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -32,7 +36,7 @@ export default function LoginScreen() {
                         }).then(async (respostaServ) => {
                             const dadosDaResposta = await respostaServ.json()
                             const token = dadosDaResposta.token;
-                            // console.log('token--', token)
+                            console.log('token--', token)
                             nookies.set(null, 'USER_TOKEN', token, {
                                 path: '/',
                                 maxAge: 86400 * 7

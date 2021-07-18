@@ -143,6 +143,7 @@ AlurakutMenu.Wrapper = styled.header`
       background: #5579A1;
       padding: 10px 42px;
       border: 0;
+    
       background-image: url(${`${BASE_URL}/icons/search.svg`});
       background-position: 15px center;
       background-repeat: no-repeat;
@@ -162,6 +163,8 @@ AlurakutMenu.Logo = styled.img`
   border-radius: 1000px;
   height: 34px;
 `;
+
+
 
 function AlurakutMenuProfileSidebar({ githubUser }) {
   return (
@@ -329,11 +332,13 @@ const AlurakutLoginScreen = css`
     --colorSecondary: #388BB0;
     --colorTertiary: #2F4A71;
     --colorQuarternary: #D81D99;
+    --colorWorng:#f00;
     --textPrimaryColor: #333333;
     --textSecondaryColor: #FFFFFF;
     --textTertiaryColor: #5A5A5A;
     --textQuarternaryColor: #C5C6CA;
     --commonRadius: 8px;
+   
   }
   .loginScreen {
     padding: 16px;
@@ -430,6 +435,7 @@ const AlurakutLoginScreen = css`
           width: 100%;
           display: block;
           border: 0;
+          
           padding: 12px;
           border-radius: var(--commonRadius);
           background-color: var(--colorPrimary);
