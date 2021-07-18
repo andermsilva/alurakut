@@ -261,42 +261,54 @@ export default function Home(props) {
 
 
 export async function getServerSideProps(context) {
-  //const { config } = require('process');
-
-  //const isLocal = process.env.ALURA_KUT === 'local';
-
-
-  //const BASE_URL_AUTH = isLocal ? process.env.URL_AUTH :
-  //const BASE_URL_AUTH = process.env.URL_AUTH_REMOTE
-
-  const BASE_URL_AUTH = 'https://alurakut.vercel.app'
 
   const cookies = nookies.get(context)
-  const token = cookies.USER_TOKEN
+  const token = cookies.USER_TOKEN;
+  const { githubUser } = jwt.decode(token)
 
-  const { githubUser } = jwt.decode(token);
 
-  const { isAuthenticated } = await fetch(`${BASE_URL_AUTH}/api/auth`, {
-
+  const { isAuthenticated } = await fetch('https://alurakut.vercel.app/api/auth', {
     headers: {
       Authorization: token
-    }
-  }).then((resposta) => resposta.json())
+    },
 
 
+  }).then(resposta => resposta.json())
+
+
+  const response = await fetch(
+    `https://api.github.com/users/${githubUser}`
+  );
+
+  const data = await response.json()
   if (!isAuthenticated) {
+
     return {
       redirect: {
         destination: '/login?msg=err',
         permanent: false,
       }
     }
+  } else if (data.message === 'Not Found') {
+
+    console.log('não autorizado',)
+    return {
+      redirect: {
+        destination: '/login?msg=err',
+        permanent: false,
+      }
+    }
+
+  } else {
+    console.log('autorizado')
+
+
   }
-  console.log('siAuth ', isAuthenticated)
+
   return {
     props: {
-
       githubUser
-    }, // will be passed to the page component as props
+
+    },
   }
 }
