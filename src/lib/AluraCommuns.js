@@ -215,10 +215,14 @@ export function AlurakutProfileSidebarMenuDefault() {
           <img src={`${BASE_URL}/icons/plus.svg`} />
           GitHub Trends
         </a>
-        <a href="/logout">
-          <img src={`${BASE_URL}//icons/logout.svg`} />
-          Sair
-        </a>
+
+        <NextLink href='/login'>
+
+          <a>
+            <img src={`${BASE_URL}//icons/logout.svg`} />
+            Sair
+          </a>
+        </NextLink>
       </nav>
     </AlurakutProfileSidebarMenuDefault.Wrapper>
   )
