@@ -3,15 +3,11 @@ import React, { useEffect, useState } from 'react';
 import nookies from 'nookies';
 import jwt from 'jsonwebtoken';
 
-
-
 import Box from '../src/components/Box';
 import MainGrid from '../src/components/mainGrid';
 
 import { AlurakutMenu, AlurakutProfileSidebarMenuDefault, OrkutNostalgicIconSet } from '../src/lib/AluraCommuns';
 import { ProfileRelationsBoxWapper } from '../src/ProfileRelations';
-
-
 
 function ProfileSider(propriedades) {
   return (
@@ -69,6 +65,8 @@ export default function Home(props) {
 
   const [comunidades, setComunidades] = useState([]);
 
+  const [auth, setAuth] = useState(process.env.TOKEN_AUTHORIZATION)
+  console.log(auth)
   const usuarioAleatorio = props.githubUser
   const pessoasFavoristas = ['recieire',
     'Ganiell',
@@ -79,6 +77,9 @@ export default function Home(props) {
   // pegar 
   //criar uma box que vai ter um map, baseado em um array que pegamos do github
   const [seguidores, setSeguidores] = useState([]);
+
+
+
   useEffect(function () {
 
     const seguidores = fetch(`https://api.github.com/users/${usuarioAleatorio}/followers`)
@@ -88,17 +89,18 @@ export default function Home(props) {
         setSeguidores(respostaCompleta);
       });
     //API GraphQL
+    const authorization = '49b643a3f9ca081a3f2c49378a5ab4'
 
     fetch('https://graphql.datocms.com/', {
       method: 'POST',
       headers: {
-        'Authorization': '49b643a3f9ca081a3f2c49378a5ab4',
+        'Authorization': `${authorization}`,
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
       body: JSON.stringify({
         "query": `
-        query{
+         query{
           allCommunities{
             title
             id
@@ -264,8 +266,18 @@ export async function getServerSideProps(context) {
 
   const cookies = nookies.get(context)
   const token = cookies.USER_TOKEN;
-  const { githubUser } = jwt.decode(token)
 
+
+  if (!token) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      }
+    }
+  }
+
+  const { githubUser } = jwt.decode(token)
 
   const { isAuthenticated } = await fetch('https://alurakut.vercel.app/api/auth', {
     headers: {
